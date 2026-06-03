@@ -462,6 +462,7 @@ addForm.addEventListener('submit', (e) => {
         saveData();
         renderBoard();
         closeAddModal();
+        renderBacklogModal();
     }
 });
 
