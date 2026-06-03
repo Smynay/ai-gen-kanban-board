@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban задачи</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Kanban</h1>
+            <button class="add-btn" id="add-btn" title="Добавить задачу">+</button>
+        </div>
+        <div class="board" id="board">
+            <div class="column" data-status="todo">
+                <div class="column-header">
+                    <h2>Нужно сделать</h2>
+                    <span class="column-count" id="count-todo">0</span>
+                </div>
+                <div class="card-list" id="list-todo"></div>
+            </div>
+            <div class="column" data-status="in-progress">
+                <div class="column-header">
+                    <h2>В процессе</h2>
+                    <span class="column-count" id="count-in-progress">0</span>
+                </div>
+                <div class="card-list" id="list-in-progress"></div>
+            </div>
+            <div class="column" data-status="done">
+                <div class="column-header">
+                    <h2>Готово</h2>
+                    <span class="column-count" id="count-done">0</span>
+                </div>
+                <div class="card-list" id="list-done"></div>
+            </div>
+            <div class="column column-archived" data-status="archived">
+                <div class="archive-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 8v13H3V8"/>
+                        <path d="M1 3h22v5H1z"/>
+                        <path d="M10 12h4"/>
+                    </svg>
+                    <span>Архив</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal">
+            <p class="modal-text">Новая задача</p>
+            <form id="add-form">
+                <input type="text" id="add-input" placeholder="Что нужно сделать?" autocomplete="off" required>
+                <div class="add-colors-info" style="margin: 12px 0; font-size: 13px; color: #888;">
+                    Выберите колонку
+                </div>
+                <div class="column-selector" id="column-selector">
+                    <label class="col-option">
+                        <input type="radio" name="col-status" value="todo" checked>
+                        <span>Нужно сделать</span>
+                    </label>
+                    <label class="col-option">
+                        <input type="radio" name="col-status" value="in-progress">
+                        <span>В процессе</span>
+                    </label>
+                    <label class="col-option">
+                        <input type="radio" name="col-status" value="done">
+                        <span>Готово</span>
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn modal-btn-cancel" id="add-cancel">Отмена</button>
+                    <button type="submit" class="modal-btn modal-btn-confirm" style="background:#4f46e5;">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <p class="modal-text">Удалить задачу?</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="modal-cancel">Отмена</button>
+                <button class="modal-btn modal-btn-confirm" id="modal-confirm">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="archive-modal">
+        <div class="modal modal-archive">
+            <div class="modal-archive-header">
+                <h3>Архив</h3>
+                <button class="modal-close-btn" id="archive-close">&times;</button>
+            </div>
+            <div id="archive-list"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
