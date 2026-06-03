@@ -25,8 +25,6 @@ const archiveClose = document.getElementById('archive-close');
 const backlogModal = document.getElementById('backlog-modal');
 const backlogList = document.getElementById('backlog-list');
 const backlogClose = document.getElementById('backlog-close');
-const backlogAddInput = document.getElementById('backlog-add-input');
-const backlogAddBtn = document.getElementById('backlog-add-btn');
 
 let boardData = null;
 let pendingDeleteId = null;
@@ -626,7 +624,6 @@ archiveModal.addEventListener('click', (e) => {
 function openBacklogModal() {
     renderBacklogModal();
     pushModal(backlogModal);
-    setTimeout(() => backlogAddInput.focus(), 100);
 }
 
 function closeBacklogModal() {
@@ -684,22 +681,7 @@ backlogModal.addEventListener('click', (e) => {
     if (e.target === backlogModal) closeBacklogModal();
 });
 
-function addBacklogTask() {
-    const text = backlogAddInput.value.trim();
-    if (!text) return;
-    const todo = { id: genId(), text, columnId: BACKLOG };
-    boardData.todos.push(todo);
-    saveData();
-    renderBoard();
-    renderBacklogModal();
-    backlogAddInput.value = '';
-    backlogAddInput.focus();
-}
-
-backlogAddBtn.addEventListener('click', addBacklogTask);
-backlogAddInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addBacklogTask();
-});
+document.getElementById('backlog-add-btn').addEventListener('click', () => addBtn.click());
 
 const SCROLL_THRESHOLD = 60;
 const SCROLL_SPEED = 15;
