@@ -73,6 +73,7 @@ function initData() {
         columns: defaultColumns(),
         showArchive: true,
         restoreColumnId: null,
+        fullWidth: false,
         todos: [],
     };
 }
@@ -114,6 +115,7 @@ function loadData() {
         boardData = data;
         if (!boardData.columns) boardData.columns = defaultColumns();
         if (boardData.showArchive === undefined) boardData.showArchive = true;
+        if (boardData.fullWidth === undefined) boardData.fullWidth = false;
         if (!boardData.todos) boardData.todos = [];
         document.title = boardData.boardName || 'Kanban Board';
     } catch {
@@ -305,6 +307,31 @@ function renderSettings() {
     });
 
     renderRestoreSelect();
+
+    const container = document.querySelector('.container');
+    const toggleDiv = document.createElement('div');
+    toggleDiv.className = 'settings-section';
+    toggleDiv.innerHTML = `
+        <div class="settings-section-title">Отображение</div>
+        <label class="toggle settings-row">
+            <input type="checkbox" id="fullwidth-toggle" ${boardData.fullWidth ? 'checked' : ''}>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">На всю ширину</span>
+        </label>
+    `;
+    const divider = document.querySelector('.settings-divider');
+    divider.parentNode.insertBefore(toggleDiv, divider.nextSibling);
+
+    const fullwidthToggle = document.getElementById('fullwidth-toggle');
+    fullwidthToggle.addEventListener('change', () => {
+        boardData.fullWidth = fullwidthToggle.checked;
+        saveData();
+        applyFullWidth();
+    });
+}
+
+function applyFullWidth() {
+    document.querySelector('.container').classList.toggle('container-fullwidth', boardData.fullWidth);
 }
 
 function renderRestoreSelect() {
@@ -374,6 +401,7 @@ settingsBtn.addEventListener('click', () => {
 
 function closeSettingsModal() {
     boardData.showArchive = showArchiveToggle.checked;
+    boardData.fullWidth = document.getElementById('fullwidth-toggle')?.checked ?? boardData.fullWidth;
     const restoreVal = restoreSelect.value;
     if (restoreVal && boardData.columns.some(c => c.id === restoreVal)) {
         boardData.restoreColumnId = restoreVal;
@@ -682,4 +710,5 @@ board.addEventListener('touchend', (e) => {
 }, { passive: false });
 
 loadData();
+applyFullWidth();
 renderBoard();
