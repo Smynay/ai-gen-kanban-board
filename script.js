@@ -308,9 +308,12 @@ function renderSettings() {
 
     renderRestoreSelect();
 
-    const container = document.querySelector('.container');
+    const oldDisplay = document.querySelector('[data-section="display"]');
+    if (oldDisplay) oldDisplay.remove();
+
     const toggleDiv = document.createElement('div');
     toggleDiv.className = 'settings-section';
+    toggleDiv.dataset.section = 'display';
     toggleDiv.innerHTML = `
         <div class="settings-section-title">Отображение</div>
         <label class="toggle settings-row">
