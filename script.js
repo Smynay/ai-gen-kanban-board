@@ -25,6 +25,8 @@ const archiveClose = document.getElementById('archive-close');
 const backlogModal = document.getElementById('backlog-modal');
 const backlogList = document.getElementById('backlog-list');
 const backlogClose = document.getElementById('backlog-close');
+const backlogAddInput = document.getElementById('backlog-add-input');
+const backlogAddBtn = document.getElementById('backlog-add-btn');
 
 let boardData = null;
 let pendingDeleteId = null;
@@ -189,6 +191,23 @@ function renderBoard() {
     board.innerHTML = '';
     const cols = sortedColumns();
 
+    if (boardData.showBacklog) {
+        const backlogEl = document.createElement('div');
+        backlogEl.className = 'column column-backlog';
+        backlogEl.dataset.columnId = BACKLOG;
+        const count = boardData.todos.filter(t => t.columnId === BACKLOG).length;
+        backlogEl.innerHTML = `
+            <div class="archive-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                </svg>
+                <span>Бэклог <span style="font-size:12px;color:#999;">${count}</span></span>
+            </div>
+        `;
+        board.appendChild(backlogEl);
+    }
+
     cols.forEach(col => {
         const el = document.createElement('div');
         el.className = 'column';
@@ -237,33 +256,23 @@ function renderBoard() {
         `;
         board.appendChild(archivedEl);
     }
-
-    if (boardData.showBacklog) {
-        const backlogEl = document.createElement('div');
-        backlogEl.className = 'column column-backlog';
-        backlogEl.dataset.columnId = BACKLOG;
-        const count = boardData.todos.filter(t => t.columnId === BACKLOG).length;
-        backlogEl.innerHTML = `
-            <div class="archive-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
-                    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
-                </svg>
-                <span>Бэклог <span style="font-size:12px;color:#999;">${count}</span></span>
-            </div>
-        `;
-        board.appendChild(backlogEl);
-    }
 }
 
 function renderAddColumns() {
     columnSelector.innerHTML = '';
+    const backlogLabel = document.createElement('label');
+    backlogLabel.className = 'col-option';
+    backlogLabel.innerHTML = `
+        <input type="radio" name="add-col" value="${BACKLOG}" checked>
+        <span>Бэклог</span>
+    `;
+    columnSelector.appendChild(backlogLabel);
     const cols = sortedColumns();
-    cols.forEach((col, i) => {
+    cols.forEach(col => {
         const label = document.createElement('label');
         label.className = 'col-option';
         label.innerHTML = `
-            <input type="radio" name="add-col" value="${col.id}" ${i === 0 ? 'checked' : ''}>
+            <input type="radio" name="add-col" value="${col.id}">
             <span>${escapeHtml(col.name)}</span>
         `;
         columnSelector.appendChild(label);
@@ -617,6 +626,7 @@ archiveModal.addEventListener('click', (e) => {
 function openBacklogModal() {
     renderBacklogModal();
     pushModal(backlogModal);
+    setTimeout(() => backlogAddInput.focus(), 100);
 }
 
 function closeBacklogModal() {
@@ -672,6 +682,23 @@ backlogClose.addEventListener('click', closeBacklogModal);
 
 backlogModal.addEventListener('click', (e) => {
     if (e.target === backlogModal) closeBacklogModal();
+});
+
+function addBacklogTask() {
+    const text = backlogAddInput.value.trim();
+    if (!text) return;
+    const todo = { id: genId(), text, columnId: BACKLOG };
+    boardData.todos.push(todo);
+    saveData();
+    renderBoard();
+    renderBacklogModal();
+    backlogAddInput.value = '';
+    backlogAddInput.focus();
+}
+
+backlogAddBtn.addEventListener('click', addBacklogTask);
+backlogAddInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addBacklogTask();
 });
 
 const SCROLL_THRESHOLD = 60;
