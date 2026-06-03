@@ -1,4 +1,5 @@
 const ARCHIVE = '__archived__';
+const BACKLOG = '__backlog__';
 
 const board = document.getElementById('board');
 const confirmOverlay = document.getElementById('modal-overlay');
@@ -21,6 +22,9 @@ const columnSelector = document.getElementById('column-selector');
 const archiveModal = document.getElementById('archive-modal');
 const archiveList = document.getElementById('archive-list');
 const archiveClose = document.getElementById('archive-close');
+const backlogModal = document.getElementById('backlog-modal');
+const backlogList = document.getElementById('backlog-list');
+const backlogClose = document.getElementById('backlog-close');
 
 let boardData = null;
 let pendingDeleteId = null;
@@ -73,6 +77,8 @@ function initData() {
         columns: defaultColumns(),
         showArchive: true,
         restoreColumnId: null,
+        showBacklog: true,
+        restoreBacklogColumnId: null,
         fullWidth: false,
         todos: [],
     };
@@ -103,6 +109,9 @@ function loadData() {
                 columns: cols,
                 showArchive: data.showArchive !== undefined ? data.showArchive : true,
                 restoreColumnId: cols[0].id,
+                showBacklog: true,
+                restoreBacklogColumnId: null,
+                fullWidth: false,
                 todos: data.todos.map(t => ({
                     id: t.id,
                     text: t.text,
@@ -115,6 +124,8 @@ function loadData() {
         boardData = data;
         if (!boardData.columns) boardData.columns = defaultColumns();
         if (boardData.showArchive === undefined) boardData.showArchive = true;
+        if (boardData.showBacklog === undefined) boardData.showBacklog = true;
+        if (boardData.restoreBacklogColumnId === undefined) boardData.restoreBacklogColumnId = null;
         if (boardData.fullWidth === undefined) boardData.fullWidth = false;
         if (!boardData.todos) boardData.todos = [];
         document.title = boardData.boardName || 'Kanban Board';
@@ -136,6 +147,20 @@ function saveData() {
 
 function getFirstColumnId() {
     return boardData.columns.length > 0 ? boardData.columns[0].id : null;
+}
+
+function getRestoreColumnId() {
+    if (boardData.restoreColumnId && boardData.columns.some(c => c.id === boardData.restoreColumnId)) {
+        return boardData.restoreColumnId;
+    }
+    return getFirstColumnId();
+}
+
+function getBacklogRestoreColumnId() {
+    if (boardData.restoreBacklogColumnId && boardData.columns.some(c => c.id === boardData.restoreBacklogColumnId)) {
+        return boardData.restoreBacklogColumnId;
+    }
+    return getFirstColumnId();
 }
 
 function getRestoreColumnId() {
@@ -211,6 +236,23 @@ function renderBoard() {
             </div>
         `;
         board.appendChild(archivedEl);
+    }
+
+    if (boardData.showBacklog) {
+        const backlogEl = document.createElement('div');
+        backlogEl.className = 'column column-backlog';
+        backlogEl.dataset.columnId = BACKLOG;
+        const count = boardData.todos.filter(t => t.columnId === BACKLOG).length;
+        backlogEl.innerHTML = `
+            <div class="archive-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                </svg>
+                <span>Бэклог <span style="font-size:12px;color:#999;">${count}</span></span>
+            </div>
+        `;
+        board.appendChild(backlogEl);
     }
 }
 
@@ -299,7 +341,8 @@ function renderSettings() {
                 saveData();
                 renderBoard();
                 renderSettings();
-                renderRestoreSelect();
+    renderRestoreSelect();
+    renderBacklogRestoreSelect();
             }
         });
 
@@ -331,6 +374,24 @@ function renderSettings() {
         saveData();
         applyFullWidth();
     });
+}
+
+function renderBacklogRestoreSelect() {
+    const select = document.getElementById('backlog-restore-select');
+    const currentVal = select.value;
+    select.innerHTML = '';
+    const cols = sortedColumns();
+    cols.forEach(col => {
+        const opt = document.createElement('option');
+        opt.value = col.id;
+        opt.textContent = col.name;
+        select.appendChild(opt);
+    });
+    if (currentVal && boardData.columns.some(c => c.id === currentVal)) {
+        select.value = currentVal;
+    } else if (boardData.restoreBacklogColumnId && boardData.columns.some(c => c.id === boardData.restoreBacklogColumnId)) {
+        select.value = boardData.restoreBacklogColumnId;
+    }
 }
 
 function applyFullWidth() {
@@ -399,15 +460,21 @@ addForm.addEventListener('submit', (e) => {
 settingsBtn.addEventListener('click', () => {
     renderSettings();
     showArchiveToggle.checked = boardData.showArchive;
+    document.getElementById('show-backlog-toggle').checked = boardData.showBacklog;
     pushModal(settingsModal);
 });
 
 function closeSettingsModal() {
     boardData.showArchive = showArchiveToggle.checked;
+    boardData.showBacklog = document.getElementById('show-backlog-toggle').checked;
     boardData.fullWidth = document.getElementById('fullwidth-toggle')?.checked ?? boardData.fullWidth;
     const restoreVal = restoreSelect.value;
     if (restoreVal && boardData.columns.some(c => c.id === restoreVal)) {
         boardData.restoreColumnId = restoreVal;
+    }
+    const backlogRestoreVal = document.getElementById('backlog-restore-select').value;
+    if (backlogRestoreVal && boardData.columns.some(c => c.id === backlogRestoreVal)) {
+        boardData.restoreBacklogColumnId = backlogRestoreVal;
     }
     saveData();
     renderBoard();
@@ -432,6 +499,17 @@ restoreSelect.addEventListener('change', () => {
     saveData();
 });
 
+document.getElementById('show-backlog-toggle').addEventListener('change', () => {
+    boardData.showBacklog = document.getElementById('show-backlog-toggle').checked;
+    saveData();
+    renderBoard();
+});
+
+document.getElementById('backlog-restore-select').addEventListener('change', () => {
+    boardData.restoreBacklogColumnId = document.getElementById('backlog-restore-select').value;
+    saveData();
+});
+
 addColumnBtn.addEventListener('click', () => {
     const col = { id: genId(), name: 'Новая колонка', isCompleted: false, canArchive: false, order: boardData.columns.length };
     boardData.columns.push(col);
@@ -439,6 +517,7 @@ addColumnBtn.addEventListener('click', () => {
     renderBoard();
     renderSettings();
     renderRestoreSelect();
+    renderBacklogRestoreSelect();
     const cards = settingsList.querySelectorAll('.settings-column-card');
     if (cards.length > 0) {
         const last = cards[cards.length - 1];
@@ -507,6 +586,11 @@ board.addEventListener('click', (e) => {
         openArchiveModal();
         return;
     }
+    const backlogCol = e.target.closest('.column-backlog');
+    if (backlogCol) {
+        openBacklogModal();
+        return;
+    }
     const deleteBtn = e.target.closest('.delete-btn');
     if (!deleteBtn) return;
     const card = deleteBtn.closest('.card');
@@ -527,6 +611,66 @@ archiveClose.addEventListener('click', closeArchiveModal);
 
 archiveModal.addEventListener('click', (e) => {
     if (e.target === archiveModal) closeArchiveModal();
+});
+
+function openBacklogModal() {
+    renderBacklogModal();
+    pushModal(backlogModal);
+}
+
+function closeBacklogModal() {
+    popModal();
+}
+
+function renderBacklogModal() {
+    const items = boardData.todos.filter(t => t.columnId === BACKLOG);
+    backlogList.innerHTML = '';
+    const restoreColId = getBacklogRestoreColumnId();
+    const restoreCol = boardData.columns.find(c => c.id === restoreColId);
+    const restoreName = restoreCol ? restoreCol.name : 'колонку';
+
+    items.forEach(todo => {
+        const div = document.createElement('div');
+        div.className = 'archive-card';
+        div.innerHTML = `
+            <span class="archive-card-text">${escapeHtml(todo.text)}</span>
+            <div class="archive-card-actions">
+                <button class="archive-card-btn restore" data-id="${todo.id}">Вернуть в «${escapeHtml(restoreName)}»</button>
+                <button class="archive-card-btn delete" data-id="${todo.id}">Удалить</button>
+            </div>
+        `;
+        backlogList.appendChild(div);
+    });
+}
+
+backlogList.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.archive-card-btn');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.classList.contains('restore')) {
+        const restoreColId = getBacklogRestoreColumnId();
+        const todo = boardData.todos.find(t => t.id === id);
+        if (todo) {
+            todo.columnId = restoreColId;
+            saveData();
+            renderBoard();
+            renderBacklogModal();
+        }
+    } else if (btn.classList.contains('delete')) {
+        const confirmed = await showConfirmModal();
+        if (confirmed) {
+            boardData.todos = boardData.todos.filter(t => t.id !== id);
+            saveData();
+            renderBoard();
+            renderBacklogModal();
+        }
+    }
+});
+
+backlogClose.addEventListener('click', closeBacklogModal);
+
+backlogModal.addEventListener('click', (e) => {
+    if (e.target === backlogModal) closeBacklogModal();
 });
 
 const SCROLL_THRESHOLD = 60;

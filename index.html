@@ -71,6 +71,18 @@
                     <select id="restore-column-select" class="settings-select"></select>
                 </div>
             </div>
+            <div class="settings-section">
+                <div class="settings-section-title">Бэклог</div>
+                <label class="toggle settings-row">
+                    <input type="checkbox" id="show-backlog-toggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Показывать колонку бэклога</span>
+                </label>
+                <div class="settings-row settings-restore">
+                    <span class="settings-restore-label">Восстанавливать задачи в колонку:</span>
+                    <select id="backlog-restore-select" class="settings-select"></select>
+                </div>
+            </div>
             <div class="modal-actions">
                 <button class="modal-btn modal-btn-cancel" id="settings-close-btn">Закрыть</button>
             </div>
@@ -84,6 +96,16 @@
                 <button class="modal-close-btn" id="archive-close">&times;</button>
             </div>
             <div id="archive-list"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="backlog-modal">
+        <div class="modal modal-archive">
+            <div class="modal-archive-header">
+                <h3>Бэклог</h3>
+                <button class="modal-close-btn" id="backlog-close">&times;</button>
+            </div>
+            <div id="backlog-list"></div>
         </div>
     </div>
 
