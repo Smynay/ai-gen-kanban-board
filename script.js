@@ -42,7 +42,14 @@ function popModal() {
 function loadTodos() {
     const stored = localStorage.getItem('todos');
     if (stored) {
-        todos = JSON.parse(stored);
+        const data = JSON.parse(stored);
+        if (Array.isArray(data)) {
+            todos = data;
+            document.title = 'Kanban Board';
+        } else {
+            todos = data.todos || [];
+            document.title = data.boardName || 'Kanban Board';
+        }
         todos.forEach(t => {
             if (t.completed !== undefined) {
                 t.status = t.completed ? 'done' : 'todo';
@@ -54,7 +61,8 @@ function loadTodos() {
 }
 
 function saveTodos() {
-    localStorage.setItem('todos', JSON.stringify(todos));
+    const data = { boardName: document.title, todos };
+    localStorage.setItem('todos', JSON.stringify(data));
 }
 
 function showConfirmModal() {
