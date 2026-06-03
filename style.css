@@ -41,7 +41,7 @@ h1 {
     width: 40px;
     height: 40px;
     border: none;
-    background: #f0f0f0;
+    background: #e0e0e0;
     color: #666;
     font-size: 20px;
     border-radius: 10px;
@@ -53,7 +53,7 @@ h1 {
 }
 
 .icon-btn:hover {
-    background: #e0e0e0;
+    background: #d0d0d0;
     color: #333;
 }
 
