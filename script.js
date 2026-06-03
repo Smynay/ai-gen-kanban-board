@@ -350,6 +350,7 @@ function renderSettings() {
     });
 
     renderRestoreSelect();
+    renderBacklogRestoreSelect();
 
     const oldDisplay = document.querySelector('[data-section="display"]');
     if (oldDisplay) oldDisplay.remove();
